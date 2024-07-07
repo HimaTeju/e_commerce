@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <title>{% block title %}{% endblock %} | Sri Krishna Electricals</title>
+</head>
+
+<body>
+    <nav class="py-6 px-6 flex justify-between 
+    items-center border -b border-gray-500">
+        <a href="/" class="text-xl font-bold">Sri Krishna Electricals</a>
+
+        <div class="space-x-6">
+            {% block nav_items %}
+
+            {% if request.user.is_authenticated and request.user.is_superuser %}
+                <a href="{% url 'core:add_retailer' %}" class="px-6 py-3 text-lg font-semibold bg-red-500 text-white rounded-xl hover:bg-red-700">Add Retailer</a>
+                <a href="{% url 'items:new' %}" class="px-6 py-3 text-lg font-semibold bg-gray-500 text-white rounded-xl hover:bg-gray-700">Add Items</a>
+            {% else %}
+                <a href="#" class="px-6 py-3 text-lg font-semilbold border -b border-black-200 rounded-l hover:bg-gray-500 hover:text-white">Show Items</a>
+
+            {% endif %}
+            {% endblock %}
+        </div>
+    </nav>
+    <div class="px-6 py-6">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <footer class="py-6 px-6 flex justify-between bg-gray-800">
+        <div class="w-2/3 pr-10">
+            <p class="font-semibold text-gray-400">Sri Krishna Electricals &copy; 2024</p>   
+        </div>
+        
+
+</body>
+
+</html>
