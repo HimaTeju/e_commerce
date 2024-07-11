@@ -9,8 +9,6 @@ class Item(models.Model):
     image = models.ImageField(upload_to='item_images', blank=True, null=True)
     is_sold = models.BooleanField(default=False)
     Created_at = models.DateTimeField(auto_now_add=True)
-    quantity = models.IntegerField(default=1)
-    
 
     class Meta:
         ordering = ['name',]
