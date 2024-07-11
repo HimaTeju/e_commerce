@@ -5,10 +5,9 @@ INPUT_CLASSES = 'mt-2 w-full py-4 px-6 rounded-xl border border-gray-400'
 class NewItemForm(forms.ModelForm):
     class Meta:
         model = Item
-        fields = ['category', 'name', 'description', 'price', 'image']
+        fields = ['name', 'description', 'price', 'image']
     
         widgets = {
-            'category': forms.Select(attrs={'class': INPUT_CLASSES,}),
             'name': forms.TextInput(attrs={'class': INPUT_CLASSES,}),
             'description': forms.Textarea(attrs={'class': INPUT_CLASSES,}),
             'price': forms.TextInput(attrs={'class': INPUT_CLASSES}),
