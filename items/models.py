@@ -21,6 +21,19 @@ class Item(models.Model):
 class Cart(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    product_count = models.PositiveIntegerField(default=0)
+    total_price = models.FloatField(default=0.0)
+
+    def update_totals(self):
+        # Calculate total price and product count from related CartItems
+        cart_items = self.cartitem_set.all()
+        total_price = sum(cart_item.quantity * cart_item.item.price for cart_item in cart_items)
+        product_count = sum(cart_item.quantity for cart_item in cart_items)
+
+        # Update the fields in the Cart model
+        self.total_price = total_price
+        self.product_count = product_count
+        self.save()
 
     def __str__(self):
         return f"Cart of {self.user.username}"
@@ -29,11 +42,12 @@ class Cart(models.Model):
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1)
+    quantity = models.PositiveIntegerField(default=0)
+    amount = models.FloatField(default=0.0)
 
     def __str__(self):
         return f"{self.quantity} x {self.item.name} in cart of {self.cart.user.username}"
-
+    
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

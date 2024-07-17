@@ -1,0 +1,41 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Cart Items{% endblock %}
+
+{% block content %}
+    <div class="mt-6 px-6 py-12 bg-gray-100 rounded-xl">
+        <h2 class="mb-12 text-2xl text-center">Cart Items</h2>
+        
+        {% if cart_items %}
+            <table class="table-auto w-full bg-white rounded-lg shadow-lg">
+                <thead>
+                    <tr>
+                        <th class="px-4 py-2">Name</th>
+                        <th class="px-4 py-2">Quantity</th>
+                        <th class="px-4 py-2">Price</th>
+                        <th class="px-4 py-2">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cart_item in cart_items %}
+                        <tr>
+                            <td class="border px-4 py-2">{{ cart_item.item.name }}</td>
+                            <td class="border px-4 py-2">{{ cart_item.quantity }}</td>
+                            <td class="border px-4 py-2">₹{{ cart_item.item.price }}</td>
+                            <td class="border px-4 py-2">₹{{ cart_item.amount }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="text-center mt-6">
+                <p class="mt-6 mb-4 text-2xl font-semi-bold text-center">Total Price: ₹{{ cart.total_price }}</p>
+                <a href="." class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Confirm Order</a>
+            </div>
+        {% else %}
+            <p class="mb-12 text-2xl text-center font-bold">No items in the cart.</p>
+            <div class="text-center mt-6">
+                <a href="{% url 'core:index' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Home</a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

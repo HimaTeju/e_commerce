@@ -14,16 +14,47 @@
                     <h3 class="text-xl font-semibold">{{ item.name }}</h3>
                     <p class="text-gray-500">{{ item.description }}</p>
                     <p class="text-gray-500">₹{{ item.price }}</p>
-                    <form method="POST" action=".">
-                        {% csrf_token %}
-                        <input type="hidden" name="item_id" value="{{ item.id }}">
-                        <input type="number" name="quantity" min="1" placeholder="Quantity" required class="text-gray-600 p-2 rounded border-gray-300">
-                        <button type="submit" class="mt-4 block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                            Add to Cart
-                        </button>
-                    </form>
+                    <input type="number" data-item-id="{{ item.id }}" class="quantity-input text-gray-600 p-2 rounded border-gray-300" placeholder="Quantity" min="1">
+                    <button class="mt-4 block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded add-to-cart-btn" data-item-id="{{ item.id }}">
+                        Add to Cart
+                    </button>
                 </div>
             {% endfor %}
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.add-to-cart-btn');
+            
+            buttons.forEach(button => {
+                button.addEventListener('click', function(event) {
+                    const itemId = button.getAttribute('data-item-id');
+                    const quantityInput = document.querySelector(`.quantity-input[data-item-id="${itemId}"]`);
+                    const quantity = quantityInput.value;
+
+                    fetch('{% url "items:add_to_cart" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({
+                            item_id: itemId,
+                            quantity: quantity
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Item added to cart successfully!');
+                        } else {
+                            alert('Error adding item to cart.');
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
+            });
+        });
+    </script>
 {% endblock %}
