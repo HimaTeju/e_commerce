@@ -2,48 +2,72 @@
 
 {% block title %}Welcome{% endblock %}
 
-{% block user %}{{user}}{% endblock %}
+{% block welcome %}
+        <div class="text-xl font-bold mr-20">Welcome 
+            {% if user.is_authenticated %}
+            {{ user }}!
+            {% endif %}
+        </div>
+{% endblock %}
+
+{% block nav_items %}
+
+{% if request.user.is_authenticated and request.user.is_superuser %}
+<a href="{% url 'core:add_retailer' %}"
+    class="px-6 py-3 text-lg font-semibold bg-red-500 text-white rounded-xl hover:bg-red-700">Add Retailer</a>
+<a href="{% url 'items:new' %}"
+    class="px-6 py-3 text-lg font-semibold bg-gray-500 text-white rounded-xl hover:bg-gray-700">Add Items</a>
+{% else %}
+<a href="{% url 'items:view_cart' %}"
+    class="px-6 py-3 text-lg font-semilbold border -b border-black-200 rounded-l hover:bg-gray-500 hover:text-white">View
+    Cart ({{ cart.product_count }})</a>
+
+{% endif %}
+{% endblock %}
 
 {% block content %}
-    <div class="mt-6 px-6 py-12 bg-gray-100 rounded-xl">
-        <h2 class="mb-12 text-2xl text-center">Add Items</h2>
-        <div class="grid grid-cols-3 gap-3">
-            {% for item in items %}
-                <div class="bg-white p-6 rounded-lg shadow-lg">
-                    <img src="{{ item.image.url }}" class="rounded-t-xl">
-                    <h3 class="text-xl font-semibold">{{ item.name }}</h3>
-                    <p class="text-gray-500">{{ item.description }}</p>
-                    <p class="text-gray-500">₹{{ item.price }}</p>
-                    <input type="number" data-item-id="{{ item.id }}" class="quantity-input text-gray-600 p-2 rounded border-gray-300" placeholder="Quantity" min="1">
-                    <button class="mt-4 block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded add-to-cart-btn" data-item-id="{{ item.id }}">
-                        Add to Cart
-                    </button>
-                </div>
-            {% endfor %}
+<div class="mt-6 px-6 py-12 bg-gray-100 rounded-xl">
+    <h2 class="mb-12 text-2xl text-center">Add Items</h2>
+    <div class="grid grid-cols-3 gap-3">
+        {% for item in items %}
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <img src="{{ item.image.url }}" class="rounded-t-xl">
+            <h3 class="text-xl font-semibold">{{ item.name }}</h3>
+            <p class="text-gray-500">{{ item.description }}</p>
+            <p class="text-gray-500">₹{{ item.price }}</p>
+            <input type="number" data-item-id="{{ item.id }}"
+                class="quantity-input text-gray-600 p-2 rounded border-gray-300" placeholder="Quantity" min="1">
+            <button
+                class="mt-4 block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded add-to-cart-btn"
+                data-item-id="{{ item.id }}">
+                Add to Cart
+            </button>
         </div>
+        {% endfor %}
     </div>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const buttons = document.querySelectorAll('.add-to-cart-btn');
-            
-            buttons.forEach(button => {
-                button.addEventListener('click', function(event) {
-                    const itemId = button.getAttribute('data-item-id');
-                    const quantityInput = document.querySelector(`.quantity-input[data-item-id="${itemId}"]`);
-                    const quantity = quantityInput.value;
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const buttons = document.querySelectorAll('.add-to-cart-btn');
 
-                    fetch('{% url "items:add_to_cart" %}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        },
-                        body: JSON.stringify({
-                            item_id: itemId,
-                            quantity: quantity
-                        })
+        buttons.forEach(button => {
+            button.addEventListener('click', function (event) {
+                const itemId = button.getAttribute('data-item-id');
+                const quantityInput = document.querySelector(`.quantity-input[data-item-id="${itemId}"]`);
+                const quantity = quantityInput.value;
+
+                fetch('{% url "items:add_to_cart" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        item_id: itemId,
+                        quantity: quantity
                     })
+                })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
@@ -53,8 +77,8 @@
                         }
                     })
                     .catch(error => console.error('Error:', error));
-                });
             });
         });
-    </script>
+    });
+</script>
 {% endblock %}

@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 import json
 
 from .forms import NewItemForm
-from .models import Item, Cart, CartItem
+from .models import Item, Cart, CartItem, Order, OrderItem
 
 # Create your views here.
 @login_required
@@ -42,7 +42,6 @@ def add_to_cart(request):
         cart_item.save()
         cart.update_totals()
         
-
         return JsonResponse({'success': True})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
@@ -57,3 +56,35 @@ def show_cart_items(request):
         'cart_items': cart_items,
         'cart': cart,
     })
+
+@login_required
+def confirm_order(request):
+        user = request.user
+        try:
+            cart = Cart.objects.get(user=user)
+        except Cart.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Cart not found'})
+        
+        cart_items = CartItem.objects.filter(cart=cart)
+
+        if not cart_items.exists():
+            return JsonResponse({'success': False, 'error': 'No items in cart'})
+
+        order = Order.objects.create(
+            user=user,
+            total_price=cart.total_price
+        )
+
+        for cart_item in cart_items:
+            OrderItem.objects.create(
+                order=order,
+                item=cart_item.item,
+                quantity=cart_item.quantity,
+                price=cart_item.item.price
+            )
+
+        cart_items.delete()  # Clear the cart items after creating the order
+        cart.delete() # Reset the cart totals
+
+        return JsonResponse({'success': True})
+       

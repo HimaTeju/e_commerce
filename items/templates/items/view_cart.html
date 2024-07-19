@@ -7,29 +7,20 @@
         <h2 class="mb-12 text-2xl text-center">Cart Items</h2>
         
         {% if cart_items %}
-            <table class="table-auto w-full bg-white rounded-lg shadow-lg">
-                <thead>
-                    <tr>
-                        <th class="px-4 py-2">Name</th>
-                        <th class="px-4 py-2">Quantity</th>
-                        <th class="px-4 py-2">Price</th>
-                        <th class="px-4 py-2">Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for cart_item in cart_items %}
-                        <tr>
-                            <td class="border px-4 py-2">{{ cart_item.item.name }}</td>
-                            <td class="border px-4 py-2">{{ cart_item.quantity }}</td>
-                            <td class="border px-4 py-2">₹{{ cart_item.item.price }}</td>
-                            <td class="border px-4 py-2">₹{{ cart_item.amount }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="grid grid-cols-3 gap-3">
+                {% for cart_item in cart_items %}
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <img src="{{ cart_item.item.image.url }}" class="rounded-t-xl">
+                        <h3 class="text-xl font-semibold">{{ cart_item.item.name }}</h3>
+                        <p class="text-gray-500">Quantity: {{ cart_item.quantity }}</p>
+                        <p class="text-gray-500">Price: ₹{{ cart_item.item.price }}</p>
+                        <p class="text-gray-500">Amount: ₹{{ cart_item.amount }}</p>
+                    </div>
+                {% endfor %}
+            </div>
             <div class="text-center mt-6">
                 <p class="mt-6 mb-4 text-2xl font-semi-bold text-center">Total Price: ₹{{ cart.total_price }}</p>
-                <a href="." class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Confirm Order</a>
+                <a href="{% url 'items:confirm_order' %}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Confirm Order</a>
             </div>
         {% else %}
             <p class="mb-12 text-2xl text-center font-bold">No items in the cart.</p>

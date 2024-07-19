@@ -1,12 +1,16 @@
 from django.shortcuts import render, redirect
-from items.models import Item
+from items.models import Item, Cart
 from .forms import AddRetailerForm
 from django.contrib.auth.models import User
 
 # Create your views here.
 def index(request):
     items = Item.objects.all()
-    return render(request, "core/index.html",{"items": items, "user": request.user})
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    return render(request, "core/index.html",{
+        "items": items, 
+        "user": request.user,
+        "cart": cart})
 
 def contact(request):
     return render(request, "core/contact.html")
