@@ -59,32 +59,50 @@ def show_cart_items(request):
 
 @login_required
 def confirm_order(request):
-        user = request.user
-        try:
-            cart = Cart.objects.get(user=user)
-        except Cart.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Cart not found'})
-        
-        cart_items = CartItem.objects.filter(cart=cart)
+    user = request.user
+    try:
+        cart = Cart.objects.get(user=user)
+    except Cart.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Cart not found'})
+    
+    cart_items = CartItem.objects.filter(cart=cart)
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    cart.update_totals()
 
-        if not cart_items.exists():
-            return JsonResponse({'success': False, 'error': 'No items in cart'})
+    if not cart_items.exists():
+        return JsonResponse({'success': False, 'error': 'No items in cart'})
 
-        order = Order.objects.create(
-            user=user,
-            total_price=cart.total_price
+    return render(request, 'items/confirm_order.html', {
+        'cart_items': cart_items,
+        'cart': cart,})
+
+@login_required
+def place_order(request):
+    user = request.user
+    try:
+        cart = Cart.objects.get(user=user)
+    except Cart.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Cart not found'})
+    
+    cart_items = CartItem.objects.filter(cart=cart)
+
+    if not cart_items.exists():
+        return JsonResponse({'success': False, 'error': 'No items in cart'})
+
+    order = Order.objects.create(
+        user=user,
+        total_price=cart.total_price
+    )
+
+    for cart_item in cart_items:
+        OrderItem.objects.create(
+            order=order,
+            item=cart_item.item,
+            quantity=cart_item.quantity,
+            price=cart_item.item.price
         )
 
-        for cart_item in cart_items:
-            OrderItem.objects.create(
-                order=order,
-                item=cart_item.item,
-                quantity=cart_item.quantity,
-                price=cart_item.item.price
-            )
+    cart_items.delete()  # Clear the cart items after creating the order
+    cart.delete() # Reset the cart totals
 
-        cart_items.delete()  # Clear the cart items after creating the order
-        cart.delete() # Reset the cart totals
-
-        return JsonResponse({'success': True})
-       
+    return JsonResponse({'success': True})
