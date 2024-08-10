@@ -26,24 +26,56 @@
 {% endblock %}
 
 {% block content %}
-<div class="mt-6 px-6 py-12 bg-gray-100 rounded-xl">
-    <h2 class="mb-12 text-2xl text-center">Add Items</h2>
-    <div class="grid grid-cols-3 gap-3">
-        {% for item in items %}
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <img src="{{ item.image.url }}" class="rounded-t-xl">
-            <h3 class="text-xl font-semibold">{{ item.name }}</h3>
-            <p class="text-gray-500">{{ item.description }}</p>
-            <p class="text-gray-500">₹{{ item.price }}</p>
-            <input type="number" data-item-id="{{ item.id }}"
-                class="quantity-input text-gray-600 p-2 rounded border-gray-300" placeholder="Quantity" min="1">
-            <button
-                class="mt-4 block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded add-to-cart-btn"
-                data-item-id="{{ item.id }}">
-                Add to Cart
-            </button>
-        </div>
-        {% endfor %}
+<div class="flex">
+    <!-- Sidebar -->
+    <div class="w-64 h-screen bg-gray-800 text-white flex flex-col space-y-4 p-6">
+        {% if request.user.is_authenticated and request.user.is_superuser %}
+            <a href="{% url 'core:add_retailer' %}" class="block px-4 py-2 rounded hover:bg-gray-700">Add Retailer</a>
+            <a href="{% url 'items:new' %}" class="block px-4 py-2 rounded hover:bg-gray-700">Add Items</a>
+        {% else %}
+            <a href="{% url 'items:view_cart' %}" class="block px-4 py-2 rounded hover:bg-gray-700">View Cart ({{ cart.product_count }})</a>
+        {% endif %}
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-grow p-6">
+        {% if request.user.is_superuser %}
+            <h2 class="mb-12 text-2xl text-center">Orders</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {% for order in orders %}
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-xl font-semibold">Order ID: {{ order.id }}</h3>
+                        <p class="text-gray-500">User: {{ order.user.username }}</p>
+                        <p class="text-gray-500">Total Price: ₹{{ order.total_price }}</p>
+                        <p class="text-gray-500">Items:</p>
+                        <ul>
+                            {% for item in order.orderitem_set.all %}
+                                <li>{{ item.quantity }} x {{ item.item.name }} @ ₹{{ item.price }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <h2 class="mb-12 text-2xl text-center">Add Items</h2>
+            <div class="grid grid-cols-3 gap-3">
+                {% for item in items %}
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <img src="{{ item.image.url }}" class="rounded-t-xl">
+                        <h3 class="text-xl font-semibold">{{ item.name }}</h3>
+                        <p class="text-gray-500">{{ item.description }}</p>
+                        <p class="text-gray-500">₹{{ item.price }}</p>
+                        <input type="number" data-item-id="{{ item.id }}"
+                            class="quantity-input text-gray-600 p-2 rounded border-gray-300" placeholder="Quantity" min="1">
+                        <button
+                            class="mt-4 block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded add-to-cart-btn"
+                            data-item-id="{{ item.id }}">
+                            Add to Cart
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
     </div>
 </div>
 
