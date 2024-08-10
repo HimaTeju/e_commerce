@@ -3,26 +3,11 @@
 {% block title %}Welcome{% endblock %}
 
 {% block welcome %}
-        <div class="text-xl font-bold mr-20">Welcome 
-            {% if user.is_authenticated %}
-            {{ user }}!
-            {% endif %}
-        </div>
-{% endblock %}
-
-{% block nav_items %}
-
-{% if request.user.is_authenticated and request.user.is_superuser %}
-<a href="{% url 'core:add_retailer' %}"
-    class="px-6 py-3 text-lg font-semibold bg-red-500 text-white rounded-xl hover:bg-red-700">Add Retailer</a>
-<a href="{% url 'items:new' %}"
-    class="px-6 py-3 text-lg font-semibold bg-gray-500 text-white rounded-xl hover:bg-gray-700">Add Items</a>
-{% else %}
-<a href="{% url 'items:view_cart' %}"
-    class="px-6 py-3 text-lg font-semilbold border -b border-black-200 rounded-l hover:bg-gray-500 hover:text-white">View
-    Cart ({{ cart.product_count }})</a>
-
-{% endif %}
+    <div class="text-xl font-bold mr-20">Welcome 
+        {% if user.is_authenticated %}
+        {{ user }}!
+        {% endif %}
+    </div>
 {% endblock %}
 
 {% block content %}
