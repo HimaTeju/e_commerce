@@ -99,7 +99,7 @@ def place_order(request):
             order=order,
             item=cart_item.item,
             quantity=cart_item.quantity,
-            price=cart_item.item.price
+            amount=cart_item.item.price * cart_item.quantity
         )
 
     cart_items.delete()  # Clear the cart items after creating the order
