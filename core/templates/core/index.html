@@ -6,32 +6,29 @@
 <div class="text-xl font-bold mr-20">
   Welcome {% if user.is_authenticated %} {{ user }}! {% endif %}
 </div>
-{% endblock %} 
+{% endblock %}
+{% block nav_items %}
+    {% if request.user.is_superuser %}
+    <a href="{% url 'core:add_retailer' %}" class="px-4 py-2 rounded bg-blue-500 hover:bg-blue-700 text-white">
+        Add Retailer
+    </a>
+    <a href="{% url 'items:new' %}" class="px-4 py-2 rounded bg-blue-500 hover:bg-blue-700 text-white">
+        Add Items
+    </a>
+    {% else %}
+    <a href="{% url 'items:view_cart' %}" class="px-4 py-2 rounded bg-blue-500 hover:bg-blue-700 text-white">
+        View Cart ({{ cart.product_count }})
+    </a>
+    <form method="POST" action="{% url 'core:logout' %}" class="inline">
+      {% csrf_token %}
+      <button type="submit" class="px-4 py-2 rounded bg-red-500 hover:bg-red-700 text-white">
+          Logout
+      </button>
+  </form>
+    {% endif %}
+{% endblock %}
 
 {% block content %}
-<div class="flex">
-  <!-- Sidebar -->
-  <div class="w-64 h-screen bg-gray-800 text-white flex flex-col space-y-4 p-6">
-    {% if request.user.is_authenticated and request.user.is_superuser %}
-    <a
-      href="{% url 'core:add_retailer' %}"
-      class="block px-4 py-2 rounded hover:bg-gray-700"
-      >Add Retailer</a
-    >
-    <a
-      href="{% url 'items:new' %}"
-      class="block px-4 py-2 rounded hover:bg-gray-700"
-      >Add Items</a
-    >
-    {% else %}
-    <a
-      href="{% url 'items:view_cart' %}"
-      class="block px-4 py-2 rounded hover:bg-gray-700"
-      >View Cart ({{ cart.product_count }})</a
-    >
-    {% endif %}
-  </div>
-
   <!-- Main Content -->
   <div class="flex-grow p-6">
     {% if request.user.is_superuser %}
@@ -49,7 +46,7 @@
         <ul>
           {% for item in order.orderitem_set.all %}
           <li>
-            {{ item.quantity }} x {{ item.item.name }} @ ₹{{ item.price }}
+            {{ item.quantity }} x {{ item.item.name }} @ ₹{{ item.item.price }}
           </li>
           {% endfor %}
         </ul>
@@ -80,8 +77,8 @@
               <tr>
                 <td class="border px-4 py-2">{{ item.item.name }}</td>
                 <td class="border px-4 py-2">{{ item.quantity }}</td>
-                <td class="border px-4 py-2">₹{{ item.price }}</td>
-                <td class="border px-4 py-2">₹{{ order.total_price }}</td>
+                <td class="border px-4 py-2">₹{{ item.item.price }}</td>
+                <td class="border px-4 py-2">₹{{ item.amount }}</td>
               </tr>
               {% endfor %}
             </tbody>
