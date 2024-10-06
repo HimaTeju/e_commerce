@@ -3,48 +3,134 @@
 {% block title %}Welcome{% endblock %}
 
 {% block welcome %}
-        <div class="text-xl font-bold mr-20">Welcome 
-            {% if user.is_authenticated %}
-            {{ user }}!
-            {% endif %}
-        </div>
+<div class="text-xl font-bold mr-20">
+  Welcome {% if user.is_authenticated %} {{ user }}! {% endif %}
+</div>
 {% endblock %}
-
 {% block nav_items %}
-
-{% if request.user.is_authenticated and request.user.is_superuser %}
-<a href="{% url 'core:add_retailer' %}"
-    class="px-6 py-3 text-lg font-semibold bg-red-500 text-white rounded-xl hover:bg-red-700">Add Retailer</a>
-<a href="{% url 'items:new' %}"
-    class="px-6 py-3 text-lg font-semibold bg-gray-500 text-white rounded-xl hover:bg-gray-700">Add Items</a>
-{% else %}
-<a href="{% url 'items:view_cart' %}"
-    class="px-6 py-3 text-lg font-semilbold border -b border-black-200 rounded-l hover:bg-gray-500 hover:text-white">View
-    Cart ({{ cart.product_count }})</a>
-
-{% endif %}
+    {% if request.user.is_superuser %}
+    <a href="{% url 'core:add_retailer' %}" class="px-4 py-2 rounded bg-blue-500 hover:bg-blue-700 text-white">
+        Add Retailer
+    </a>
+    <a href="{% url 'items:new' %}" class="px-4 py-2 rounded bg-blue-500 hover:bg-blue-700 text-white">
+        Add Items
+    </a>
+    {% else %}
+    <a href="{% url 'items:view_cart' %}" class="px-4 py-2 rounded bg-blue-500 hover:bg-blue-700 text-white">
+        View Cart ({{ cart.product_count }})
+    </a>
+    <form method="POST" action="{% url 'core:logout' %}" class="inline">
+      {% csrf_token %}
+      <button type="submit" class="px-4 py-2 rounded bg-red-500 hover:bg-red-700 text-white">
+          Logout
+      </button>
+  </form>
+    {% endif %}
 {% endblock %}
 
 {% block content %}
-<div class="mt-6 px-6 py-12 bg-gray-100 rounded-xl">
+  <!-- Main Content -->
+  <div class="flex-grow p-6">
+    {% if request.user.is_superuser %}
+    <h2 class="mb-12 text-2xl text-center">Orders</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      {% for order in orders %}
+      <div
+        class="bg-white p-6 rounded-lg shadow-lg cursor-pointer order-card"
+        data-order-id="{{ order.id }}"
+      >
+        <h3 class="text-xl font-semibold">Order ID: {{ order.id }}</h3>
+        <p class="text-gray-500">User: {{ order.user.username }}</p>
+        <p class="text-gray-500">Total Price: ₹{{ order.total_price }}</p>
+        <p class="text-gray-500">Items:</p>
+        <ul>
+          {% for item in order.orderitem_set.all %}
+          <li>
+            {{ item.quantity }} x {{ item.item.name }} @ ₹{{ item.item.price }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Modal for this specific order -->
+      <div
+        id="orderModal-{{ order.id }}"
+        class="fixed inset-0 hidden bg-gray-900 bg-opacity-50 flex items-center justify-center z-50"
+      >
+        <div class="bg-white p-8 rounded-lg w-full max-w-lg">
+          <h3 class="text-xl font-semibold mb-4">Order Details</h3>
+          <div class="mb-4">
+            <p><strong>Order ID:</strong> {{ order.id }}</p>
+            <p><strong>User:</strong> {{ order.user.username }}</p>
+          </div>
+          <table class="table-auto w-full mb-4">
+            <thead>
+              <tr>
+                <th class="px-4 py-2">Item Name</th>
+                <th class="px-4 py-2">Quantity</th>
+                <th class="px-4 py-2">Price</th>
+                <th class="px-4 py-2">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in order.orderitem_set.all %}
+              <tr>
+                <td class="border px-4 py-2">{{ item.item.name }}</td>
+                <td class="border px-4 py-2">{{ item.quantity }}</td>
+                <td class="border px-4 py-2">₹{{ item.item.price }}</td>
+                <td class="border px-4 py-2">₹{{ item.amount }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <div class="text-right mb-4">
+            <strong>Total Price: ₹</strong>{{ order.total_price }}
+          </div>
+          <div class="flex justify-end space-x-4">
+            <button
+              onclick="printOrder({{ order.id }})"
+              class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
+            >
+              Print
+            </button>
+            <button
+              onclick="closeModal({{ order.id }})"
+              class="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-700"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
     <h2 class="mb-12 text-2xl text-center">Add Items</h2>
     <div class="grid grid-cols-3 gap-3">
-        {% for item in items %}
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <img src="{{ item.image.url }}" class="rounded-t-xl">
-            <h3 class="text-xl font-semibold">{{ item.name }}</h3>
-            <p class="text-gray-500">{{ item.description }}</p>
-            <p class="text-gray-500">₹{{ item.price }}</p>
-            <input type="number" data-item-id="{{ item.id }}"
-                class="quantity-input text-gray-600 p-2 rounded border-gray-300" placeholder="Quantity" min="1">
-            <button
-                class="mt-4 block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded add-to-cart-btn"
-                data-item-id="{{ item.id }}">
-                Add to Cart
-            </button>
-        </div>
-        {% endfor %}
+      {% for item in items %}
+      <div class="bg-white p-6 rounded-lg shadow-lg">
+        <img src="{{ item.image.url }}" class="rounded-t-xl" />
+        <h3 class="text-xl font-semibold">{{ item.name }}</h3>
+        <p class="text-gray-500">{{ item.description }}</p>
+        <p class="text-gray-500">₹{{ item.price }}</p>
+        <input
+          type="number"
+          data-item-id="{{ item.id }}"
+          class="quantity-input text-gray-600 p-2 rounded border-gray-300"
+          placeholder="Quantity"
+          min="1"
+        />
+        <button
+          class="mt-4 block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded add-to-cart-btn"
+          data-item-id="{{ item.id }}"
+        >
+          Add to Cart
+        </button>
+      </div>
+      {% endfor %}
     </div>
+    {% endif %}
+  </div>
 </div>
 
 <script>
@@ -79,6 +165,35 @@
                     .catch(error => console.error('Error:', error));
             });
         });
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+      const orderCards = document.querySelectorAll('.order-card');
+
+      // Show modal on order card click
+      orderCards.forEach(card => {
+          card.addEventListener('click', function () {
+              const orderID = card.getAttribute('data-order-id');
+              const modal = document.getElementById('orderModal-' + orderID);
+              modal.classList.remove('hidden');
+          });
+      });
+
+      // Close modal
+      window.closeModal = function(orderID) {
+          const modal = document.getElementById('orderModal-' + orderID);
+          modal.classList.add('hidden');
+      }
+
+      // Print order
+      window.printOrder = function(orderID) {
+          const modal = document.getElementById('orderModal-' + orderID).innerHTML;
+          const originalContents = document.body.innerHTML;
+
+          document.body.innerHTML = modal;
+          window.print();
+          document.body.innerHTML = originalContents;
+          window.location.reload();  // Refresh after printing
+      }
     });
 </script>
 {% endblock %}
